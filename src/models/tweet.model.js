@@ -1,5 +1,4 @@
 import mongoose,{Schema} from "mongoose";
-import { Video } from "./video.model.js";
 import { User } from "./user.model.js";
 const tweetsSchema = new Schema({
     content :{

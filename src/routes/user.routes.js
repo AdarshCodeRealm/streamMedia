@@ -1,7 +1,7 @@
 import { Router } from "express"
-import { upload } from "../middleware/multer.middleware.js"
+import { upload } from "../middlewares/multer.middleware.js"
 import { registerUser,loginUser,logoutUser,refreshAccessToken,changeCurrentPassword,getCurrentUser,updateAccountDetails,updateUserAvatar,updateUserCoverImage,getUserChannelProfile,getWatchHistory } from "../controllers/user.controller.js"
-import { verifyJWT } from "../middleware/auth.middleware.js"
+import { verifyJWT } from "../middlewares/auth.middleware.js"
 const router = Router()
 
 router.route("/register").post(

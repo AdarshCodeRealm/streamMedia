@@ -13,7 +13,6 @@ const videoSchema = new Schema(
     owner: {
       type: Schema.Types.ObjectId,
       ref: "User",
-      required: true,
     },
     title: {
       type: String,
@@ -21,7 +20,6 @@ const videoSchema = new Schema(
     },
     description: {
       type: String,
-      required:true
     },
     duration: {
         type:Number,

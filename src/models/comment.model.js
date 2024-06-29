@@ -1,6 +1,6 @@
 import mongoose,{Schema} from "mongoose";
-import { Video } from "./video.model";
-import { User } from "./user.model";
+import { Video } from "./video.model.js";
+import { User } from "./user.model.js";
 const commentSchema = new Schema({
 
     content :{
@@ -18,5 +18,5 @@ const commentSchema = new Schema({
         required:true
     }
 
-},{timestamps})
+},{timestamps:true})
 export const Comment = mongoose.model("Comment",commentSchema) 
