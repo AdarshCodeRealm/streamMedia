@@ -22,24 +22,33 @@ const getUser = (req, res) => {
   return decodedToken
 }
 const getAllVideos = asyncHandler(async (req, res) => {
-  const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query
-  //TODO: get all videos based on query, sort, pagination
-  const videos = await Video.find({});
-  if(!videos){
-    throw new ApiError(404,"videos not found.")
+  console.log(req.query)
+  const { page = 1, limit = 5, query, sortBy, sortType, userId } = req.query
+  //TODO: get all videos based on query, sort, pagination  // i guess user id is a owner
+  let videoPerPage = []
+  const videos = (
+    userId
+      ? await Video.find({ $and: [{ isPublished: true }, { owner: userId }] })
+      : await Video.find({ isPublished: true })
+          .sort(
+            sortBy && sortType ? { [sortBy]: sortType === "asc" ? 1 : -1 } : {}
+          )
+          .skip(((page || 1) - 1) * limit)
+          .limit(limit)
+  )
+    .filter((video) => video.isPublished)
+    .forEach((video) => {
+      videoPerPage.push(video)
+    })
+  if (videoPerPage.length == 0) {
+    throw new ApiError(404, "video Not Found")
   }
-   return res
-   .status(200)
-   .json(
-    new ApiResponse(
-      200,
-      videos,
-      "all videos fetched successfully."
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, videoPerPage, "all videos fetched successfully.")
     )
-   );
-
-
-
 })
 
 const publishAVideo = asyncHandler(async (req, res) => {
@@ -86,8 +95,8 @@ const getVideoById = asyncHandler(async (req, res) => {
 const updateVideo = asyncHandler(async (req, res) => {
   const { videoId } = req.params
   const video = await Video.findById(videoId)
-  if(!video.owner.equals(req.user._id)){
-    throw new ApiError(400,"unauthorized request.")
+  if (!video.owner.equals(req.user._id)) {
+    throw new ApiError(400, "unauthorized request.")
   }
   //TODO: update video details like title, description, thumbnail
   const { title, description } = req.body
@@ -108,12 +117,12 @@ const deleteVideo = asyncHandler(async (req, res) => {
   const { videoId } = req.params
   //TODO: delete video
   const video = await Video.findById(videoId)
-  if(!video.owner.equals(req.user._id)){
-    throw new ApiError(400,"unauthorized request.")
+  if (!video.owner.equals(req.user._id)) {
+    throw new ApiError(400, "unauthorized request.")
   }
   const deletedVideo = await Video.findByIdAndDelete(videoId)
   if (!mongoose.Types.ObjectId.isValid(videoId)) {
-    return res.status(400).json(new ApiResponse(400, null, "Invalid video ID"));
+    return res.status(400).json(new ApiResponse(400, null, "Invalid video ID"))
   }
   if (!deletedVideo) {
     return res
@@ -123,41 +132,39 @@ const deleteVideo = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(
-      200, deletedVideo, "Video deleted successfully"
-    ))
+    .json(new ApiResponse(200, deletedVideo, "Video deleted successfully"))
 })
 
 const togglePublishStatus = asyncHandler(async (req, res) => {
   const { videoId } = req.params
   const video = await Video.findById(videoId)
 
-  if(!video.owner.equals(req.user._id)){
-    throw new ApiError(400,"unauthorized request.")
+  if (!video.owner.equals(req.user._id)) {
+    throw new ApiError(400, "unauthorized request.")
   }
   if (!video) {
-    return new ApiError( 404, "Video not found" );
+    return new ApiError(404, "Video not found")
   }
-  
+
   const updatedVideo = await Video.findByIdAndUpdate(
     videoId,
-    { $set: { isPublished:!video.isPublished }},
+    { $set: { isPublished: !video.isPublished } },
     { new: true } // Option to return the updated document
-  
-  );
-  if(!updateVideo){
+  )
+  if (!updateVideo) {
     throw new ApiError(400, "failed to update publish status.")
   }
-  
-  return res.status(200).json(
-    new ApiResponse(
-      200,
-      updateVideo,
-      ` publish status updated to ${video.isPublished? "public": "private"}.`
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        updateVideo,
+        ` publish status updated to ${video.isPublished ? "public" : "private"}.`
+      )
     )
-  )
-  }
-)
+})
 
 export {
   getAllVideos,
