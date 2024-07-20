@@ -5,10 +5,11 @@ import { ApiResponse } from "../utils/ApiResponse.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
 
 const toggleVideoLike = asyncHandler(async (req, res) => {
-  const { videoId } = req.params
   //TODO: toggle like on video
+  const { videoId } = req.params
+
   const likedVideo = await Like.findOne({ video: videoId })
-  if (likedVideo) {
+  if (likedVideo !=null) {
     await Like.findByIdAndDelete(likedVideo._id)
     return res
       .status(200)
